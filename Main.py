@@ -4,8 +4,6 @@ import HRMenu
 from CW2DBLocal import Database
 
 loginMenuState = True
-registarState = False
-loginState = False
 authenticateUser = False
 applicantMenuState = False
 HRMenuState = False
@@ -21,25 +19,12 @@ while loginMenuState == True:
     print('3. Exit program')
     loginOptionChosen = input("Enter your option here to continue: ")
     if loginOptionChosen == "1":
-        loginState = True
-        loginMenuState = False
+        DB.verifyAccount()
     elif loginOptionChosen == "2":
-        registarState = True
-        loginMenuState = False
+        DB.createAccount()
     elif loginOptionChosen == "3":
         DB.closeDataBase()
-        loginMenuState = False
-
-while registarState == True:
-    DB.createTable()
-    DB.createUserName()
-    
-
-
-
-while loginState == True:
-    usernameCheck = input('Please enter in your username: ')
-    passwordCheck = input('Please enter in your password: ')
+        loginMenuState = False    
     
 
 #Login Success

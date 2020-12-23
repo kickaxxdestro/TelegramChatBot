@@ -8,10 +8,6 @@ class Database:
         self.conn.commit()
 
     @staticmethod
-    def verifyLogin(self):
-       return None
-
-    @staticmethod
     def submitNewApplication(self, username, dictType, dict):
         self.c.execute("SELECT * FROM applicantLogin")
         
@@ -25,16 +21,15 @@ class Database:
             self.c.execute("INSERT INTO WorkingExperiences VALUES (dict['Company'],dict['Industry'],dict['Position'],dict['From'],dict['To'],dict['Level'],dict['MonthlySalary'])")
         elif(str == "References"):
             self.c.execute("INSERT INTO References VALUES (dict['Name'],dict['Occupation'], dict['CompanyOrganization'], dict['ContactNo'],dict['Email'],dict['Relationship'])")
+        
+    def createAccount(self):
+        self.c.execute("CREATE TABLE IF NOT EXISTS applicantLogin (username TEXT PRIMARY KEY, password TEXT NOT NULL)")
 
-    def createTable(self):
-        self.c.execute("CREATE TABLE IF NOT EXISTS applicantLogin (username TEXT, password TEXT, ID INT AUTO_INCREMENT PRIMARY KEY")
-
-
-    def createUserName(self):
         userNameSet = True
         passWordSet = False
+        userNameInput = ""
         while userNameSet == True:
-            userNameInput = input("Please input your new username: ")
+            userNameInput = input("Please type in your new username: ")
             self.c.execute("SELECT * FROM applicantLogin")
             usernames = {username[0] for username in self.c.fetchall()}
             if userNameInput in usernames:
@@ -45,20 +40,30 @@ class Database:
                 passWordSet = True;
 
         while passWordSet == True:
-            passwordInput = input("Please type in your new password: ")
+            passWordInput = input("Please type in your new password: ")
             print("Username: " + userNameInput + " Password: " + passWordInput)
             print("Are you okay with your new username and password?")
             confirmation = input("1 - Yes, 2 - No: ")
 
             if(confirmation == "1"):
-                self.c.execute("INSERT INTO applicantLogin VALUES(userNameInput, passWordInput)")
+                self.c.execute("INSERT INTO applicantLogin VALUES (\"%s\",\"%s\")"% (userNameInput, passWordInput))
                 self.conn.commit()
                 passWordSet = False
 
             elif(confirmation == "2"):
                 userNameSet = True
+                passWordSet = False
 
-        return None
+    
+    def verifyAccount(self):
+        usernameCheck = input('Please enter your username: ')
+        passwordCheck = input('Please enter your password: ')
+        self.c.execute("SELECT * FROM applicantLogin")
+        usernames = {username[0] for username in self.c.fetchall()}
+        if userNameInput not in usernames:
+            print("The username does not exist please try again.")
+        else:
+            print("Success.")
 
     def closeDataBase(self):
         self.c.close()
