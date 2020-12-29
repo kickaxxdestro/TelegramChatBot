@@ -1,26 +1,27 @@
-import CW2DBLocal
 import os
 from datetime import date
 
 class ApplicantMenu(object):
 
-    @staticmethod
-    def createNewApplication(username):
+    def __init__(self,DB):
+        self.DB = DB
+
+    def createNewApplication(self):
         
         newApplicationMenuState = 'NewApplicationMainMenuState'
         newApplicationMenu = True
 
-        jobApplyDict = {'PositionApplied':'', 'DateApplied':'', 'ExpectedSalary': '', 'Availability': ''}
+        jobApplyDict = {'PositionApplied':'', 'DateApplied':'', 'ExpectedSalary': '', 'Availability': '', 'AcceptJob': '', 'ConfirmJob': ''}
         personalDetailDict = {'Name':'', 'NRIC_Passport':'', 'Address':'', 'PostalCode': '', 'Email': '', 'HomeNo': '', 'MobileNo': '', 'DateOfBirth': '', 'Gender': ''}
         qualificationDict = {'Qualification': '', 'InstitutionUniversity': '', 'Major': '', 'Grade': '', 'YearGraduated': ''}
-        workingExperienceDict = {'Company': '', 'Industry': '', 'Position': '', 'From': '', 'To': '', 'Level': '', 'MonthlySalary': ''}
+        workingExperienceDict = {'Company': '', 'Industry': '', 'Position': '', 'FromMonth': '', 'FromYear': '', 'ToMonth': '', 'ToYear': '','Level': '', 'MonthlySalary': ''}
         referenceDict = {'Name': '', 'Occupation': '', 'CompanyOrganization': '', 'ContactNo': '', 'Email': '', 'Relationship': ''}
 
         today = date.today()
 
         while newApplicationMenu == True:
             if newApplicationMenuState == 'NewApplicationMainMenuState':
-                print('Create your new application! Please select your option to continue:')
+                print('____________________________________________')
                 print('1. Job Choice')
                 print('2. Personal Details')
                 print('3. Qualifications')
@@ -42,8 +43,9 @@ class ApplicantMenu(object):
                 elif optionChosen == "6":
                     newApplicationMenuState = 'FinalConfirmationState'
                 elif optionChosen == "7":
-                    print('Thank you for using the application!')
                     newApplicationMenu = False;
+                else:
+                    print("Incorrect input, please try again.")
 
             elif newApplicationMenuState == 'JobChoiceState':
                 jobChoiceMenuState = 'PositionState'
@@ -61,16 +63,18 @@ class ApplicantMenu(object):
                         jobChoiceMenuState = 'CheckState'
 
                     elif jobChoiceMenuState == 'CheckState':
-                        confirmation = input("Are you sure about your application?\n1 - Yes, 2 - No: ")
+                        confirmation = input("Are you sure about your input?\n1 - Yes, 2 - No: ")
                         if confirmation == "1":
                             jobApplyDict['Date'] = today.strftime("%d/%m/%Y")
+                            jobApplyDict['AcceptJob'] = "0"
+                            jobApplyDict['ConfirmJob'] = "0"
                             jobChoiceMenuState = 'ConfirmedState'
                         elif confirmation == "2":
                             jobChoiceMenuState = 'PositionState'
+                        else:
+                            print("Incorrect input, please try again.")
                 else:
-                    CW2DBLocal.Database.submitNewApplication("JobApply",jobApplyDict)
                     newApplicationMenuState = 'NewApplicationMainMenuState'
-                    return None
 
             elif newApplicationMenuState == 'PersonalDetailState':
                 personalDetailMenuState = 'NameState'
@@ -101,10 +105,13 @@ class ApplicantMenu(object):
 
                     elif personalDetailMenuState == 'MobileNoState':
                         personalDetailDict['MobileNo'] = input("Enter your mobile number: ")
-                        personalDetailMenuState = 'DOBState'
+                        personalDetailMenuState = 'DateOfBirthState'
 
-                    elif personalDetailMenuState == 'DOBState':
-                        personalDetailDict['DateOfBirth'] = input("Enter your Date of Birth: ")
+                    elif personalDetailMenuState == 'DateOfBirthState':
+                        dateOfBirth = input("Enter the day of your Birth: ")
+                        monthOfBirth = input("Enter the month of your Birth: ")
+                        yearOfBirth = input("Enter the year of your Birth: ")
+                        personalDetailDict['DateOfBirth'] = dateOfBirth + "/" + monthOfBirth + "/" + yearOfBirth
                         personalDetailMenuState = 'GenderState'
 
                     elif personalDetailMenuState == 'GenderState':
@@ -117,7 +124,6 @@ class ApplicantMenu(object):
                             personalDetailMenuState = 'CheckState'
                         else:
                             print("Please enter 1 or 2 only.")
-                            personalDetailMenuState = 'GenderState'
 
                     elif personalDetailMenuState == 'CheckState':
                         confirmation = input("Are you sure about your application?\n1 - Yes, 2 - No: ")
@@ -125,10 +131,10 @@ class ApplicantMenu(object):
                             personalDetailMenuState = 'ConfirmedState'
                         elif confirmation == '2':
                             personalDetailMenuState = 'GenderState'
+                        else:
+                            print("Incorrect input, please try again.")
                 else:
-                    CW2DBLocal.Database.submitNewApplication("PersonalDetails",personalDetailDict)
                     newApplicationMenuState = 'NewApplicationMainMenuState'
-                    return None
 
             elif newApplicationMenuState == 'QualificationState':
                 qualificationMenuState = 'QualificationState'
@@ -154,14 +160,15 @@ class ApplicantMenu(object):
                         qualificationMenuState = 'CheckState'
 
                     elif qualificationMenuState == 'CheckState':
-                        confirmation = input("Are you sure about your application?\n1 - Yes, 2 - No: ")
+                        confirmation = input("Are you sure about your input?\n1 - Yes, 2 - No: ")
                         if confirmation == "1":
                             qualificationMenuState = 'ConfirmedState'
                         elif confirmation == "2":
                             qualificationMenuState = 'PositionState'
+                        else:
+                            print("Incorrect input, please try again.")
                 else:
                     newApplicationMenuState = 'NewApplicationMainMenuState'
-                    return None
 
             elif newApplicationMenuState == 'WorkingExperienceState':
                 workingExperienceMenuState = 'CompanyState'
@@ -176,14 +183,18 @@ class ApplicantMenu(object):
 
                     elif workingExperienceMenuState == 'PositionState':
                         workingExperienceDict['Position'] = input("Enter your position in the job: ")
-                        workingExperienceMenuState = 'FromState'
+                        workingExperienceMenuState = 'FromDateState'
 
-                    elif workingExperienceMenuState == 'FromState':
-                        workingExperienceDict['From'] = input("Enter the month and year when you started: ")
-                        workingExperienceMenuState = 'ToState'
+                    elif workingExperienceMenuState == 'FromDateState':
+                        fromMonth = input("Enter the month when you started: ")
+                        fromYear = input("Enter the year when you started: ")
+                        workingExperienceDict['FromDate'] = fromMonth + "/" + fromYear
+                        workingExperienceMenuState = 'ToDateState'
 
-                    elif workingExperienceMenuState == 'ToState':
-                        workingExperienceDict['To'] = input("Enter the month and year when you stopped: ")
+                    elif workingExperienceMenuState == 'ToDateState':
+                        ToMonth = input("Enter the month when you started: ")
+                        ToYear = input("Enter the year when you started: ")
+                        workingExperienceDict['ToDate'] = ToMonth + "/" + ToYear
                         workingExperienceMenuState = 'LevelState'
 
                     elif workingExperienceMenuState == 'LevelState':
@@ -195,11 +206,15 @@ class ApplicantMenu(object):
                         workingExperienceMenuState = 'CheckState'
 
                     elif workingExperienceMenuState == 'CheckState':
-                        confirmation = input("Are you sure about your application?\n1 - Yes, 2 - No: ")
+                        confirmation = input("Are you sure about your input?\n1 - Yes, 2 - No: ")
                         if confirmation == "1":
                             workingExperienceMenuState = 'ConfirmedState'
                         elif confirmation == "2":
-                            workingExperienceMenuState = 'PositionState'
+                            workingExperienceMenuState = 'CompanyState'
+                        else:
+                            print("Incorrect input, please try again.")
+                else:
+                    newApplicationMenuState = 'NewApplicationMainMenuState'
 
             elif newApplicationMenuState == 'ReferenceState':
                 referenceMenuState = 'NameState'
@@ -229,35 +244,38 @@ class ApplicantMenu(object):
                         referenceMenuState = 'CheckState'
 
                     elif referenceMenuState == 'CheckState':
-                        confirmation = input("Are you sure about your application?\n1 - Yes, 2 - No: ")
+                        confirmation = input("Are you sure about your input?\n1 - Yes, 2 - No: ")
                         if confirmation == "1":
                             referenceMenuState = 'ConfirmedState'
                         elif confirmation == "2":
                             referenceMenuState = 'PositionState'
+                        else:
+                            print("Incorrect input, please try again.")
                 else:
                     newApplicationMenuState = 'NewApplicationMainMenuState'
-                    return None
-                return None
 
             elif newApplicationMenuState == 'FinalConfirmationState':
                 finalConfirmation = input("Are you sure about submitting your application?\n1 - Yes, 2 - No: ")
                 if finalConfirmation == "1":
-                    CW2DBLocal.Database.submitNewApplication(username, "JobApply",jobApplyDict)
+                    dictList = [jobApplyDict, personalDetailDict, qualificationDict, workingExperienceDict, referenceDict]
+                    self.DB.submitNewApplication(dictList)
                     newApplicationMenu = False;
                 elif confirmation == "2":
                     newApplicationMenuState = 'NewApplicationMainMenuState'
+                else:
+                    print("Incorrect input, please try again.")
                 
 
 
     @staticmethod
-    def reviewSubmittedApplication():
+    def reviewSubmittedApplication(self):
 
         reviewApplicationMenuState = 'ReviewState'
 
         while reviewApplicationMenuState != 'ConfirmedState':
 
             if reviewApplicationMenuState == 'ReviewState':
-                p
+                print("Shoot")
 
             elif reviewApplicationMenuState == 'ReviewState':
                 print('Potato')
